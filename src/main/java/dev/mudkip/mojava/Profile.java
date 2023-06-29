@@ -56,20 +56,20 @@ public class Profile {
 		}
 	}
 	
-	public SkinModel getSkinModel() {
+	public Skin.Model getSkinModel() {
 		JsonObject texturesJSON = this.getPropertyAsJSON("textures")
 				.orElseThrow(RuntimeException::new)
 				.getAsJsonObject("textures");
 		
 		if (!texturesJSON.has("SKIN")) {
-			return SkinModel.CLASSIC;
+			return Skin.Model.CLASSIC;
 		} else {
 			JsonObject skinJSON = texturesJSON.getAsJsonObject("SKIN");
 			
 			if (!skinJSON.has("metadata")) {
-				return SkinModel.CLASSIC;
+				return Skin.Model.CLASSIC;
 			} else {
-				return SkinModel.fromString(
+				return Skin.Model.fromString(
 						skinJSON
 						.getAsJsonObject("metadata")
 						.get("model")
