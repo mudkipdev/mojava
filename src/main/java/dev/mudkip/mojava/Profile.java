@@ -1,10 +1,13 @@
 package dev.mudkip.mojava;
 
 import com.google.gson.Gson;
-import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import dev.mudkip.mojava.skin.CustomSkin;
+import dev.mudkip.mojava.skin.Skin;
 
 import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
@@ -43,7 +46,7 @@ public class Profile {
 		return this.username;
 	}
 	
-	public Optional<String> getSkinURL() {
+	public Optional<Skin> getSkin() {
 		JsonObject texturesJSON = this.getPropertyAsJSON("textures")
 				.orElseThrow(RuntimeException::new)
 				.getAsJsonObject("textures");
@@ -51,30 +54,23 @@ public class Profile {
 		if (!texturesJSON.has("SKIN")) {
 			return Optional.empty();
 		} else {
-			JsonObject skinJSON = texturesJSON.getAsJsonObject("SKIN");
-			return Optional.of(skinJSON.get("url").getAsString());
-		}
-	}
-	
-	public Skin.Model getSkinModel() {
-		JsonObject texturesJSON = this.getPropertyAsJSON("textures")
-				.orElseThrow(RuntimeException::new)
-				.getAsJsonObject("textures");
-		
-		if (!texturesJSON.has("SKIN")) {
-			return Skin.Model.CLASSIC;
-		} else {
-			JsonObject skinJSON = texturesJSON.getAsJsonObject("SKIN");
-			
-			if (!skinJSON.has("metadata")) {
-				return Skin.Model.CLASSIC;
-			} else {
-				return Skin.Model.fromString(
-						skinJSON
-						.getAsJsonObject("metadata")
-						.get("model")
-						.getAsString()
-				);
+			try {
+				JsonObject skinJSON = texturesJSON.getAsJsonObject("SKIN");
+				URL url = new URL(skinJSON.get("url").getAsString());
+				Skin.Model model = Skin.Model.CLASSIC;
+				
+				if (skinJSON.has("metadata")) {
+					model = Skin.Model.fromString(
+							skinJSON
+							.getAsJsonObject("metadata")
+							.get("model")
+							.getAsString()
+					);
+				}
+				
+				return Optional.of(new CustomSkin(url, model));
+			} catch (MalformedURLException e) {
+				throw new RuntimeException(e);
 			}
 		}
 	}
